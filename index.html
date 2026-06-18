@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>EduMind</title>
+  <script src="https://js.putter.com/v2/"></script>
+  <style>
+    body {
+      background-color: #1a1a2e;
+      color: white;
+      font-family: Arial, sans-serif;
+      text-align: center;
+      padding: 50px;
+    }
+    
+    h1 {
+      color: #9b59b6;
+
+
+    input {
+      width: 80%;
+      padding: 10px; 
+      border-radius: 8px;
+      border: none;
+      font-size: 16px;
+      margin-top: 20px;
+    }
+    
+    button{
+      background-color: #9b59b6;
+      colour: white;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 8px;
+      font-size: 16px:
+      margin-top: 10px;
+      cursor: pointer;
+    }
+    
+    #answer {
+      margin-top: 30px;
+      font-size: 18px;
+      color: #d0d0ff;
+    }
+  </style>
+</head>
+<body>
+  
+  <h1>EduMind</h1>
+  <p>Ask a study question below:</p>
+  <input type="text" id="questionBox" placeholder="Type your question here...">
+  <br>
+  <button onclick="askQuestion()">Ask</button>
+  <div id="answer"></div>
+  
+ <script>
+var API_KEY = "AQ.Ab8RN6IP1E8Sx1_PAT84fnuErQypyGEucOOWGQ5NeiQt1r0FfA";
+
+function askQuestion() {
+  var question = document.getElementById("questionBox").value;
+  document.getElementById("answer").innerHTML = "Thinking...";
+
+  fetch("https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=" + API_KEY, {
+    method: "POST",
+    headers: {"Content-Type": "application/json"},
+    body: JSON.stringify({
+      contents: [{parts: [{text: question}]}]
+    })
+  })
+  .then(function(response) {
+    return response.json();
+  })
+  .then(function(data) {
+    var answer = data.candidates ? data.candidates[0].content.parts[0].text : JSON.stringify(data);
+    document.getElementById("answer").innerHTML = answer;
+  })
+  .catch(function(error) {
+    document.getElementById("answer").innerHTML = "Error: " + error.message;
+  });
+}
+</script>
+
+  
