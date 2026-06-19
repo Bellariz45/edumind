@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EduMind AI</title>
+    <!-- Include PDF.js library to read PDF files directly in the browser -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.min.js"></script>
+    <style>
+        :root {
+            --bg-color: #0f0f1a;
+            --card-bg: #161626;
+            --accent-color: #9b59b6;
+            --accent-glow: #b19ffb;
+            --text-color: #ffffff;
+            --muted-text: #a0a0b8;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            box-sizing: border-box;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 500px;
+            background: var(--card-bg);
+            border: 1px solid rgba(155, 89, 182, 0.2);
+            border-radius: 16px;
+            padding: 25px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+            box-sizing: border-box;
+        }
+
+        h1 {
+            color: var(--accent-glow);
+            text-align: center;
+            margin-top: 0;
+            font-size: 2rem;
+            letter-spacing: 1px;
+        }
+
+        .subtitle {
+            color: var(--muted-text);
+            text-align: center;
+            font-size: 0.9rem;
+            margin-bottom: 25px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            font-size: 0.85rem;
+            color: var(--accent-glow);
+            margin-bottom: 8px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        input[type="password"], input[type="text"] {
+            width: 100%;
+            background-color: #1f1f35;
+            color: #fff;
+            border: 1px solid rgba(155, 89, 182, 0.4);
+            border-radius: 8px;
+            padding: 12px;
+            font-size: 0.95rem;
+            box-sizing: border-box;
+            transition: all 0.3s ease;
+        }
+
+        input[type="password"]:focus, input[type="text"]:focus {
+            outline: none;
+            border-color: var(--accent-glow);
+            box-shadow: 0 0 8px rgba(177, 159, 251, 0.4);
+        }
+
+        /* Styled Custom File Upload Button */
+        .file-upload-wrapper {
+            position: relative;
+            margin-bottom: 10px;
+        }
+
+        .file-upload-btn {
+            display: block;
+            text-align: center;
+            background: #252542;
+            border: 2px dashed rgba(155, 89, 182, 0.5);
+            padding: 15px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            color: var(--muted-text);
+            font-size: 0.9rem;
+        }
+
+        .file-upload-btn:hover {
+            background: #2a2a4d;
+            border-color: var(--accent-glow);
+            color: #fff;
+        }
+
+        #fileUpload {
+            position: absolute;
+            left: 0;
+            top: 0;
+            opacity: 0;
+            width: 100%;
+            height: 100%;
+            cursor: pointer;
+        }
+
+        .file-name-display {
+            font-size: 0.85rem;
+            color: var(--accent-glow);
+            margin-top: 6px;
+            italic: true;
+            word-break: break-all;
+        }
+
+        button.submit-btn {
+            width: 100%;
+            background: linear-gradient(135deg, #8e44ad, #9b59b6);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 14px;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(155, 89, 182, 0.3);
+            transition: all 0.3s ease;
+            margin-top: 10px;
+        }
+
+        button.submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(155, 89, 182, 0.5);
+            background: linear-gradient(135deg, #9b59b6, #a96ec3);
+        }
+
+        button.submit-btn:active {
+            transform: translateY(0);
+        }
+
+        #answer {
+            margin-top: 25px;
+            padding: 15px;
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.03);
+            border-left: 4px solid var(--accent-color);
+            font-size: 0.95rem;
+            line-height: 1.6;
+            color: #e0e0f0;
+            min-height: 50px;
+            white-space: pre-wrap;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>EduMind 🎓</h1>
+        <div class="subtitle">AI Study Assistant & Document Summarizer</div>
+
+        <!-- API Key -->
+        <div class="form-group">
+            <label for="apiKeyBox">Gemini API Key</label>
+            <input type="password" id="apiKeyBox" placeholder="Paste your AIzaSy... key here">
+        </div>
+
+        <!-- Lecture Notes Upload -->
+        <div class="form-group">
+            <label>Upload Lecture Notes</label>
+            <div class="file-upload-wrapper">
+                <div class="file-upload-btn" id="uploadLabel">📁 Tap to choose a .txt or .pdf file</div>
+                <input type="file" id="fileUpload" accept=".txt,.pdf" onchange="updateFileNameDisplay()">
+            </div>
+            <div class="file-name-display" id="fileNameDisplay"></div>
+        </div>
+
+        <!-- Question Input -->
+        <div class="form-group">
+            <label for="questionBox">Study Question</label>
+            <input type="text" id="questionBox" placeholder="Type a question or custom prompt...">
+        </div>
+
+        <button class="submit-btn" onclick="processDocumentOrQuestion()">Ask EduMind</button>
+
+        <!-- Response Window -->
+        <label style="margin-top:25px; display:block;">Response</label>
+        <div id="answer">Your AI response or summary will appear here...</div>
+    </div>
+
+<script>
+// Configure PDF.js worker setup
+pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.worker.min.js';
+
+// Show the filename clearly when a file is chosen
+function updateFileNameDisplay() {
+    var fileInput = document.getElementById("fileUpload");
+    var display = document.getElementById("fileNameDisplay");
+    var label = document.getElementById("uploadLabel");
+    
+    if (fileInput.files.length > 0) {
+        display.innerHTML = "Selected file: " + fileInput.files[0].name;
+        label.innerHTML = "🔄 Change File";
+        label.style.background = "#1f1f38";
+    } else {
+        display.innerHTML = "";
+        label.innerHTML = "📁 Tap to choose a .txt or .pdf file";
+    }
+}
+
+function processDocumentOrQuestion() {
+    var API_KEY = document.getElementById("apiKeyBox").value.trim();
+    var question = document.getElementById("questionBox").value.trim();
+    var fileInput = document.getElementById("fileUpload");
+    var answerDiv = document.getElementById("answer");
+
+    if (!API_KEY) {
+        answerDiv.innerHTML = "⚠️ Error: Please paste your Gemini API key first!";
+        return;
+    }
+
+    if (fileInput.files.length > 0) {
+        var file = fileInput.files[0];
+        answerDiv.innerHTML = "⏳ Reading and processing file content...";
+
+        if (file.type === "application/pdf") {
+            var reader = new FileReader();
+            reader.onload = function(e) {
+                var typedarray = new Uint8Array(e.target.result);
+                pdfjsLib.getDocument(typedarray).promise.then(function(pdf) {
+                    var maxPages = pdf.numPages;
+                    var countPromises = [];
+                    
+                    for (var j = 1; j <= maxPages; j++) {
+                        countPromises.push(pdf.getPage(j).then(function(page) {
+                            return page.getTextContent().then(function(textContent) {
+                                return textContent.items.map(function(item) { return item.str; }).join(' ');
+                            });
+                        }));
+                    }
+                    
+                    Promise.all(countPromises).then(function(pageTexts) {
+                        var fullText = pageTexts.join('\n');
+                        var finalPrompt = "The user has uploaded lecture notes. Please provide a clear, structured summary with core concepts, bullet points, and key terms.\n\n" + 
+                                          (question ? "Additionally, please answer this specific request: " + question : "") + 
+                                          "\n\nDocument Text Content:\n" + fullText;
+                        sendToGemini(API_KEY, finalPrompt);
+                    });
+                }).catch(function(err) {
+                    answerDiv.innerHTML = "❌ Failed to read PDF pages: " + err.message;
+                });
+            };
+            reader.readAsArrayBuffer(file);
+        } else {
+            var reader = new FileReader();
+            reader.onload = function(e) {
+                var finalPrompt = "The user has uploaded lecture notes. Please provide a clear, structured summary with core concepts, bullet points, and key terms.\n\n" + 
+                                  (question ? "Additionally, answer this specific request: " + question : "") + 
+                                  "\n\nDocument Text Content:\n" + e.target.result;
+                sendToGemini(API_KEY, finalPrompt);
+            };
+            reader.readAsText(file);
+        }
+    } else if (question) {
+        sendToGemini(API_KEY, question);
+    } else {
+        answerDiv.innerHTML = "💡 Please enter a question or upload a file first!";
+    }
+}
+
+function sendToGemini(apiKey, promptText) {
+    var answerDiv = document.getElementById("answer");
+    answerDiv.innerHTML = "✨ EduMind AI is thinking...";
+
+    fetch("https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=" + apiKey, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+            contents: [{ parts: [{ text: promptText }] }]
+        })
+    })
+    .then(function(response) { return response.json(); })
+    .then(function(data) {
+        if(data.candidates && data.candidates[0].content.parts[0].text) {
+            var answer = data.candidates[0].content.parts[0].text;
+            // Clean up bold markdown text instantly for smooth browser reading
+            answerDiv.innerHTML = answer.replace(/\*\*(.*?)\*\//g, '<strong>$1</strong>');
+        } else {
+            answerDiv.innerHTML = "⚠️ API Response structure error. Check key status.";
+        }
+    })
+    .catch(function(error) {
+        answerDiv.innerHTML = "❌ Network Error: " + error.message;
+    });
+}
+</script>
+</body>
+</html>
+
