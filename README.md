@@ -76,4 +76,6 @@ decentralized foundation using 0G's modular AI infrastructure.
 MIT License
 
 ---
+### 🚀 [Launch EduMind AI (with PDF Summarizer)](https://bellariz45.github.io/edumind/)
+
 *Built for the 0G Zero Cup Hackathon 2026*
